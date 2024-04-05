@@ -1,0 +1,26 @@
+{
+  "name": "book-management-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon  server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ashish1741/Book-Management-Backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ashish1741/Book-Management-Backend/issues"
+  },
+  "homepage": "https://github.com/ashish1741/Book-Management-Backend#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.3"
+  }
+}
