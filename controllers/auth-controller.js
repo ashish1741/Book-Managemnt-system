@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const connection = require("../config/connection");
 
 const signUpUser = async (req, res) => {
+  
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
@@ -12,25 +13,11 @@ const signUpUser = async (req, res) => {
   }
 
   try {
-    const userExitQuery = `SELECT email FROM user`;
-    const userExist = connection.query(userExitQuery, (err, rows) => {
-      if (err) {
-        console.error("Error retrieving emails:", err);
-        return;
-      }
 
-      const userEmails = rows.map((curEle) => curEle.email);
-      if (userEmails.includes(email)) {
-        console.log(`User already exists`);
-        return true;
-      }
-    });
-    console.log(userExist);
-
-    const hashPassword = await bcrypt.hash(password, 6);
+    const hashPassword =  bcrypt.hash(password, 6);
     const createUserQuery = `INSERT INTO user (username , email ,  password ) VALUE (? , ? , ? )`;
 
-    connection.query(
+ connection.query(
       createUserQuery,
       [username, email, hashPassword],
       (err) => {
@@ -56,9 +43,7 @@ const signUpUser = async (req, res) => {
   }
 };
 
-module.exports = {
-  signUpUser,
-};
+
 
 //login End Point
 
@@ -78,4 +63,10 @@ const loginUser = (res, req) => {
 
 
   } catch (error) {}
+};
+
+
+
+module.exports = {
+  signUpUser,
 };

@@ -1,12 +1,12 @@
 const express = require("express");
-require("dotenv").config()
+require("dotenv").config();
 const CoonectDB = require("./config/connection");
 const bookRouter = require("./routes/book-route");
 const authRouter = require("./routes/auth-router");
-
+const logData = require("./middleware/auth");
 
 const app = express();
-const port = process.env.PORT
+const port = process.env.PORT;
 
 // middle ware for body parser
 app.use(express.json());
@@ -19,10 +19,12 @@ app.use("/api/test", (req, res) => {
   });
 });
 
+//middleware function
+app.use(logData);
 
 //route
 app.use("/api/", bookRouter);
-app.use("/api/" , authRouter)
+app.use("/api/", authRouter);
 
 // creating server
 app.listen(port, (req, res) => {

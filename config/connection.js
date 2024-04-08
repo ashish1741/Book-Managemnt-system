@@ -1,14 +1,12 @@
 const mysql = require("mysql2");
-require("dotenv").config()
-
+require("dotenv").config();
 
 const mysqlConnection = mysql.createConnection({
   host: process.env.DATABASE_HOST,
-  user: process.env.DATABASE_USER ,
+  user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATBASE_NAME,
+  database: process.env.DATABASE_NAME,
 });
-
 
 const connection = mysqlConnection.connect((Err) => {
   if (Err) {
@@ -18,6 +16,9 @@ const connection = mysqlConnection.connect((Err) => {
     console.log(Err);
   }
 });
+
+  
+
 
 
 module.exports = mysqlConnection;
