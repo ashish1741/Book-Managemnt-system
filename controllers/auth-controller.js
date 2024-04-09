@@ -12,13 +12,12 @@ const signUpUser = async (req, res) => {
   }
 
   try {
-   
     // const UserExistQuery = "SELECT * FROM user WHERE email = ?";
 
     // const userExist =  connection.query(UserExistQuery ,  email , (err , result) => {
     //   if (err) {
     //     return false
-        
+
     //   }
 
     //   return true ;
@@ -32,20 +31,18 @@ const signUpUser = async (req, res) => {
     connection.query(
       createUserQuery,
       [username, email, hashPassword],
-     async  (err , result) => {
+      async (err, result) => {
         if (err) {
           return res.status(500).json({
             statusCode: 500,
             error: "Internal Server Error",
           });
         }
-        
-          res.status(200).json({
-            statusCode: 200,
-            message: "User created successfully",
-          });
 
-        
+        res.status(200).json({
+          statusCode: 200,
+          message: "User created successfully",
+        });
       }
     );
   } catch (error) {
@@ -67,7 +64,6 @@ const loginUser = async (req, res) => {
       error: "Please provide email and password",
     });
   }
-
 
   try {
     const query = `SELECT * FROM user WHERE email = ?`;
@@ -103,7 +99,6 @@ const loginUser = async (req, res) => {
         message: "Login successful",
         user: user,
       });
-
     });
   } catch (error) {
     console.error("Error:", error);
@@ -112,35 +107,21 @@ const loginUser = async (req, res) => {
       error: "Internal server error",
     });
   }
-}
+};
 
 
 //password change
 
 const getPasswordChange = () => {
-  const {oldPassword ,  newPassword} =  req.body ;
+  const { oldPassword, newPassword } = req.body;
 
-  if (!oldPassword || !! newPassword) {
+  if (!oldPassword || !!newPassword) {
     res.status(400).json({
-      statusCode:400 ,
-      Error:'Please Provide Require Field'
-    })
-    
+      statusCode: 400,
+      Error: "Please Provide Require Field",
+    });
   }
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
+};
 
 
 module.exports = {
