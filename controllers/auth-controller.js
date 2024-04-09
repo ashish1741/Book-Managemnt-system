@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const connection = require("../config/connection");
 
 const signUpUser = async (req, res) => {
-  
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
@@ -13,25 +12,40 @@ const signUpUser = async (req, res) => {
   }
 
   try {
+   
+    // const UserExistQuery = "SELECT * FROM user WHERE email = ?";
 
-    const hashPassword =  bcrypt.hash(password, 6);
+    // const userExist =  connection.query(UserExistQuery ,  email , (err , result) => {
+    //   if (err) {
+    //     return false
+        
+    //   }
+
+    //   return true ;
+
+    // } )
+
+    const salt = await bcrypt.genSalt();
+    const hashPassword = await bcrypt.hash(password, salt);
     const createUserQuery = `INSERT INTO user (username , email ,  password ) VALUE (? , ? , ? )`;
 
- connection.query(
+    connection.query(
       createUserQuery,
       [username, email, hashPassword],
-      (err) => {
+     async  (err , result) => {
         if (err) {
           return res.status(500).json({
             statusCode: 500,
             error: "Internal Server Error",
           });
         }
+        
+          res.status(200).json({
+            statusCode: 200,
+            message: "User created successfully",
+          });
 
-        res.status(200).json({
-          statusCode: 200,
-          message: "User created successfully",
-        });
+        
       }
     );
   } catch (error) {
@@ -43,30 +57,93 @@ const signUpUser = async (req, res) => {
   }
 };
 
-
-
 //login End Point
 
-const loginUser = (res, req) => {
+const loginUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400).json({
+    return res.status(400).json({
       statusCode: 400,
-      error: "please provide email and password",
+      error: "Please provide email and password",
     });
   }
 
+
   try {
+    const query = `SELECT * FROM user WHERE email = ?`;
 
-   const   query = `SELECT * FROM user WHERE email = ${email} & password = ${password}`;
+    connection.query(query, [email], async (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          statusCode: 500,
+          error: "Internal server error",
+        });
+      }
+
+      if (result.length === 0) {
+        return res.status(401).json({
+          statusCode: 401,
+          error: "Invalid email or password",
+        });
+      }
+
+      const user = result[0];
+      const comparePassword = await bcrypt.compare(password, user.password);
+
+      if (!comparePassword) {
+        return res.status(401).json({
+          statusCode: 401,
+          error: "Invalid email or password",
+        });
+      }
+
+      // Successful login
+      return res.status(200).json({
+        statusCode: 200,
+        message: "Login successful",
+        user: user,
+      });
+
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      error: "Internal server error",
+    });
+  }
+}
+
+
+//password change
+
+const getPasswordChange = () => {
+  const {oldPassword ,  newPassword} =  req.body ;
+
+  if (!oldPassword || !! newPassword) {
+    res.status(400).json({
+      statusCode:400 ,
+      Error:'Please Provide Require Field'
+    })
+    
+  }
+
+
+}
 
 
 
-  } catch (error) {}
-};
+
+
+
+
+
+
+
 
 
 
 module.exports = {
   signUpUser,
+  loginUser,
 };
