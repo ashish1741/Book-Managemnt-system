@@ -4,7 +4,6 @@ const CoonectDB = require("./config/connection");
 const bookRouter = require("./routes/book-route");
 const authRouter = require("./routes/userRouter");
 const logData = require("./middleware/auth");
-
 const app = express();
 const port = process.env.PORT;
 

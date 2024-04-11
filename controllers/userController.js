@@ -109,7 +109,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-
 //password change
 
 const getPasswordChange = () => {
@@ -123,8 +122,98 @@ const getPasswordChange = () => {
   }
 };
 
+//updateUser Info
+
+const updateUserInfo = async (req, res) => {
+  const id = req.params.id;
+  const {username , email} =  req.body
+  console.log(id);
+
+
+  if (!username || !email) {
+    return res.status(400).json({
+      statusCode: 400,
+      Error: "Please Provide the file",
+    });
+  }
+
+  try {
+    const query = `UPDATE user SET username = ? ,  email = ? WHERE id = ? `;
+
+
+    connection.query(
+      query,
+      [username, email, id],
+      (err, result) => {
+        if (err) {
+          console.error("Error updating book:", err);
+          return res.status(500).json({
+            statusCode: 500,
+            error: "Internal Server Error",
+          });
+        }
+
+        if (result.affectedRows > 0) {
+          res.status(200).json({
+            statusCode: 200,
+            message: "user information updated successfully",
+          });
+        } else {
+          res.status(200).json({
+            statusCode: 200,
+            error: "user not found",
+          });
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      error: "Internal server error",
+    });
+  }
+};
+
+//Delete User
+const deleteUser = async (req, res) => {
+  const id =  req.params.id
+
+
+  try {
+    const query = "DELETE FROM user WHERE id = ? ";
+
+    connection.query(query, id, (err, result) => {
+      if (err) {
+        return res.status(500).json({
+          statusCode: 500,
+          error: "Internal Server Error",
+        });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          statusCode: 404,
+          error: "user not found",
+        });
+      }
+
+      return res.status(200).json({
+        statusCode: 200,
+        error: "User Deleted !",
+      });
+    });
+  } catch (error) {
+    res.status(500).json({
+      statusCode: 500,
+      error: "Internal server error",
+    });
+  }
+};
 
 module.exports = {
   signUpUser,
   loginUser,
+  updateUserInfo,
+  deleteUser
 };
