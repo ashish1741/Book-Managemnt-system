@@ -1,5 +1,9 @@
 const bcrypt = require("bcrypt");
 const connection = require("../config/connection");
+const {
+  generateJwtToken,
+  jwtAuthMiddleware,
+} = require("../middleware/jwtAuth");
 
 const signUpUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -12,26 +16,18 @@ const signUpUser = async (req, res) => {
   }
 
   try {
-    // const UserExistQuery = "SELECT * FROM user WHERE email = ?";
-
-    // const userExist =  connection.query(UserExistQuery ,  email , (err , result) => {
-    //   if (err) {
-    //     return false
-
-    //   }
-
-    //   return true ;
-
-    // } )
-
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
     const createUserQuery = `INSERT INTO user (username , email ,  password ) VALUE (? , ? , ? )`;
+    const payload = {
+      username,
+      email,
+    };
 
     connection.query(
       createUserQuery,
       [username, email, hashPassword],
-      async (err, result) => {
+      async (err, row) => {
         if (err) {
           return res.status(500).json({
             statusCode: 500,
@@ -39,10 +35,14 @@ const signUpUser = async (req, res) => {
           });
         }
 
-        res.status(200).json({
-          statusCode: 200,
-          message: "User created successfully",
-        });
+        if (row.affectedRows === 1) {
+          const token = generateJwtToken(payload);
+          res.status(200).json({
+            statusCode: 200,
+            message: "User created successfully",
+            token: token,
+          });
+        }
       }
     );
   } catch (error) {
@@ -79,7 +79,7 @@ const loginUser = async (req, res) => {
       if (result.length === 0) {
         return res.status(401).json({
           statusCode: 401,
-          error: "Invalid email or password",
+          error: "Invalid email ",
         });
       }
 
@@ -89,15 +89,25 @@ const loginUser = async (req, res) => {
       if (!comparePassword) {
         return res.status(401).json({
           statusCode: 401,
-          error: "Invalid email or password",
+          error: "Invalid  password",
         });
       }
+
+      //generated token
+
+      const payload = {
+        id: user.id,
+        username: user.username,
+      };
+
+      const token = generateJwtToken(payload);
 
       // Successful login
       return res.status(200).json({
         statusCode: 200,
         message: "Login successful",
         user: user,
+        token: token,
       });
     });
   } catch (error) {
@@ -126,9 +136,8 @@ const getPasswordChange = () => {
 
 const updateUserInfo = async (req, res) => {
   const id = req.params.id;
-  const {username , email} =  req.body
+  const { username, email } = req.body;
   console.log(id);
-
 
   if (!username || !email) {
     return res.status(400).json({
@@ -140,32 +149,27 @@ const updateUserInfo = async (req, res) => {
   try {
     const query = `UPDATE user SET username = ? ,  email = ? WHERE id = ? `;
 
-
-    connection.query(
-      query,
-      [username, email, id],
-      (err, result) => {
-        if (err) {
-          console.error("Error updating book:", err);
-          return res.status(500).json({
-            statusCode: 500,
-            error: "Internal Server Error",
-          });
-        }
-
-        if (result.affectedRows > 0) {
-          res.status(200).json({
-            statusCode: 200,
-            message: "user information updated successfully",
-          });
-        } else {
-          res.status(200).json({
-            statusCode: 200,
-            error: "user not found",
-          });
-        }
+    connection.query(query, [username, email, id], (err, result) => {
+      if (err) {
+        console.error("Error updating book:", err);
+        return res.status(500).json({
+          statusCode: 500,
+          error: "Internal Server Error",
+        });
       }
-    );
+
+      if (result.affectedRows > 0) {
+        res.status(200).json({
+          statusCode: 200,
+          message: "user information updated successfully",
+        });
+      } else {
+        res.status(200).json({
+          statusCode: 200,
+          error: "user not found",
+        });
+      }
+    });
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({
@@ -177,8 +181,7 @@ const updateUserInfo = async (req, res) => {
 
 //Delete User
 const deleteUser = async (req, res) => {
-  const id =  req.params.id
-
+  const id = req.params.id;
 
   try {
     const query = "DELETE FROM user WHERE id = ? ";
@@ -211,9 +214,45 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// user profile
+
+const getUserProfile = async (req, res) => {
+  try {
+    const userData = req.user;
+   
+    console.log(userData);
+    const userId = userData.id;
+
+    const query = `SELECT * FROM user WHERE id = ?`;
+
+    connection.query(query, [userId], (err, result) => {
+      if (err) {
+        return res.status(500).json({
+         statusCode:500,
+          error: "internal server error",
+        });
+      }
+
+      if (result.affectedRows > 0) {
+        const user = result[0];
+        res.status(200).json({
+          statusCode: 200,
+          user: user,
+        });
+      }
+    });
+  } catch (error) {
+    res.status(501).json({
+      statusCode:501 ,
+      error: "internal server error",
+    });
+  }
+};
+
 module.exports = {
   signUpUser,
   loginUser,
   updateUserInfo,
-  deleteUser
+  deleteUser,
+  getUserProfile
 };
