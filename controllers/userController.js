@@ -218,36 +218,42 @@ const deleteUser = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const userData = req.user;
-   
-    console.log(userData);
-    const userId = userData.id;
+    const id = req.userData.id;
+    
 
     const query = `SELECT * FROM user WHERE id = ?`;
 
-    connection.query(query, [userId], (err, result) => {
+    connection.query(query, [id], (err, result) => {
       if (err) {
+        console.error("Database error:", err);
         return res.status(500).json({
-         statusCode:500,
-          error: "internal server error",
+          statusCode: 500,
+          error: "Internal server error",
         });
       }
 
-      if (result.affectedRows > 0) {
+      if (result.length > 0) {
         const user = result[0];
-        res.status(200).json({
+        return res.status(200).json({
           statusCode: 200,
           user: user,
+        });
+      } else {
+        return res.status(404).json({
+          statusCode: 404,
+          error: "User not found",
         });
       }
     });
   } catch (error) {
-    res.status(501).json({
-      statusCode:501 ,
-      error: "internal server error",
+    console.error("Internal server error:", error);
+    return res.status(500).json({
+      statusCode: 500,
+      error: "Internal server error",
     });
   }
 };
+
 
 module.exports = {
   signUpUser,
