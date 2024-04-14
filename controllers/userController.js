@@ -216,6 +216,7 @@ const deleteUser = async (req, res) => {
 
 // user profile
 
+
 const getUserProfile = async (req, res) => {
   try {
     const id = req.userData.id;
